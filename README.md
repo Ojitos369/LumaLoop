@@ -38,7 +38,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-LumaLoop (formerly Slideshow Wallpaper) is an advanced Live Wallpaper for Android that transforms your home screen into a dynamic slideshow of your favorite memories. Built with modern Android technologies, it offers a seamless and highly customizable experience.
+LumaLoop is a modern, feature-rich Live Wallpaper for Android that transforms your home screen into a dynamic slideshow of high-quality images and videos. Formerly known as *Slideshow Wallpaper*, it has been completely rebuilt with a focus on performance, visual excellence, and advanced media organization.
 
 ## Key Features
 
@@ -62,18 +62,19 @@ LumaLoop (formerly Slideshow Wallpaper) is an advanced Live Wallpaper for Androi
 
 ## Technical Architecture
 
-The project follows modern Android development best practices:
+LumaLoop follows a decoupled and reactive architecture using modern Android practices:
 
-*   **View Layer**: Built entirely with **Jetpack Compose** and **Material 3**.
-*   **State Management**: Uses **StateFlow** and **ViewModels** to maintain a reactive UI.
-*   **Rendering-Engine**: 
-    *   `SlideshowWallpaperService`: Core WallpaperService implementation.
-    *   `CurrentMediaHandler`: Logic for switching media and managing playback.
-    *   `GLWallpaperRenderer`: Custom OpenGL renderer for cross-fade effects.
-*   **Media Handling**: 
-    *   **ExoPlayer**: Industry-standard video engine.
-    *   **Coil**: Modern image loading library for the gallery.
-    *   **MediaStore API**: Robust integration with Android's system gallery.
+*   **View Layer**: 100% **Jetpack Compose** with **StateFlow** for a reactive and fluid UI.
+*   **Wallpaper Service**:
+    *   `SlideshowWallpaperService`: Core service handling the live wallpaper lifecycle.
+    *   `CurrentMediaHandler`: The orchestration layer managing media state, timing, and rendering transitions.
+*   **Rendering Engines**:
+    *   **ExoPlayer**: Handles video playback and scaling natively.
+    *   **GLWallpaperRenderer**: A custom OpenGL renderer using GLSL shaders for image display and cross-fade animations.
+*   **Core Libraries**:
+    *   **Media3**: Modern player framework for both video and extensible media handling.
+    *   **Coil**: Image loading library for the Compose-based gallery.
+    *   **Material 3**: The latest design components for a premium look and feel.
 
 ## Contributing
 
