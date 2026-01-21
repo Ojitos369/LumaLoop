@@ -1,0 +1,131 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+def keystorePropertiesFile = rootProject.file("Keystore/keystore.properties")
+def keystoreProperties = null
+if (keystorePropertiesFile.canRead()) {
+    keystoreProperties = new Properties()
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    buildFeatures {
+        buildConfig true
+        compose true
+    }
+    
+    composeOptions {
+        kotlinCompilerExtensionVersion '1.5.10'
+    }
+    
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    signingConfigs {
+        release {
+
+        }
+    }
+    compileSdk 35
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    
+    defaultConfig {
+        applicationId "com.ojitos369.lumaloop"
+        minSdkVersion 21
+        targetSdk 35
+        versionCode 15
+        versionName '1.4.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+        debug {
+        }
+    }
+    productFlavors {
+    }
+    namespace 'com.ojitos369.lumaloop'
+    dependenciesInfo {
+        includeInApk false
+        includeInBundle false
+    }
+
+    applicationVariants.configureEach { variant ->
+        variant.resValue "string", "versionName", variant.versionName
+    }
+}
+
+if (keystoreProperties != null) {
+    android.signingConfigs.release.keyAlias keystoreProperties['keyAlias']
+    android.signingConfigs.release.keyPassword keystoreProperties['keyPassword']
+    android.signingConfigs.release.storeFile rootProject.file("Keystore/${keystoreProperties['storeFile']}")
+    android.signingConfigs.release.storePassword keystoreProperties['storePassword']
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    
+    // Existing dependencies
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.exifinterface:exifinterface:1.4.1'
+    implementation 'com.github.yalantis:ucrop:2.2.8'
+    implementation 'androidx.media3:media3-exoplayer:1.5.0'
+    implementation 'androidx.media3:media3-ui:1.5.0'
+    // implementation 'androidx.media3:media3-image:1.5.0'  // Not yet available
+    
+    // Kotlin
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // Compose BOM (Bill of Materials)
+    def composeBom = platform('androidx.compose:compose-bom:2024.02.00')
+    implementation composeBom
+    androidTestImplementation composeBom
+    
+    // Compose dependencies
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-extended'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    
+    // Compose Activity integration
+    implementation 'androidx.activity:activity-compose:1.9.0'
+    
+    // Compose Navigation
+    implementation 'androidx.navigation:navigation-compose:2.7.7'
+    
+    // Lifecycle ViewModels for Compose
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    
+    // Coil for image loading in Compose
+    implementation 'io.coil-kt:coil-compose:2.6.0'
+    
+    // Accompanist for system UI control (edge-to-edge, insets)
+    implementation 'com.google.accompanist:accompanist-systemuicontroller:0.34.0'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.7.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+}

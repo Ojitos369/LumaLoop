@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Slideshow Wallpaper: An Android live wallpaper displaying custom images.
+ * Copyright (C) 2022  Doubi88 <tobis_mail@yahoo.de>
+ *
+ * Slideshow Wallpaper is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Slideshow Wallpaper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+-->
+<resources>
+    <string name="app_name">Slideshow Wallpaper</string>
+    <string name="preference_edit_image_list">Imágenes</string>
+    <string name="preference_ordering">Orden</string>
+    <string name="error_reading_file">Error al leer el archivo</string>
+    <string name="delete_button_description">Eliminar</string>
+    <string name="preference_seconds">Tiempo entre imágenes</string>
+    <plurals name="images_selected">
+        <item quantity="one">%d imagen seleccionada (max. %d)</item>
+        <item quantity="many">%d imágenes seleccionadas (max. %d)</item>
+        <item quantity="other">%d imágenes seleccionadas (max. %d)</item>
+    </plurals>
+    <string name="image_view_description">Imagen</string>
+    <string name="settings_name">Ajustes</string>
+    <string name="image_list_name">Imágenes</string>
+    <string name="preference_too_wide_images_rule">Mostrar</string>
+    <string name="preference_preview">Previsualizar</string>
+    <string name="preference_preview_summary">Previsualizar y establecer como fondo de pantalla actual.</string>
+    <string name="add_image">Add Image(s)</string>
+    <string name="preference_anti_alias">Anti-aliasing</string>
+    <string name="preference_anti_alias_scroll">Anti-aliasing al desplazarse</string>
+    <string name="remove_confirmation_title">Confirmar eliminación</string>
+    <plurals name="remove_confirmation_message">
+        <item quantity="one">¿Estás seguro de que quieres eliminar %d imagen de los fondos de pantalla?</item>
+        <item quantity="many">¿Estás seguro de que quieres eliminar %d imágenes de los fondos de pantalla?</item>
+        <item quantity="other">¿Estás seguro de que quieres eliminar %d imágenes de los fondos de pantalla?</item>
+    </plurals>
+    <string name="positive_action_text">Sí</string>
+    <string name="cancel_action_text">Cancelar</string>
+    <string name="preference_info">Información</string>
+    <string name="preference_info_summary">Mostrar información sobre esta app</string>
+    <string name="info_version_caption">Versión</string>
+    <string name="info_author_caption">Autor</string>
+    <string name="info_license_caption">Licencia</string>
+    <string name="info_sourcecode_caption">Código fuente</string>
+    <string name="error_title">Error</string>
+    <string name="no_wallpaper_activity_text">Lamentablemente, su dispositivo no permite iniciar la vista previa del fondo de pantalla desde aquí. Selecciona \"Slideshow Wallpaper\" como fondo de pantalla en los ajustes del sistema.</string>
+    <string-array name="orderings">
+        <item>Orden de selección</item>
+        <item>Aleatorio</item>
+    </string-array>
+    <string-array name="too_wide_images_rules">
+        <item>Desplazar en la misma dirección que la pantalla de inicio</item>
+        <item>Desplazar en la dirección contraria a la pantalla de inicio</item>
+        <item>Reducir para que encaje</item>
+        <item>Aumentar para que encaje</item>
+    </string-array>
+    <string-array name="seconds">
+        <item>10 segundos</item>
+        <item>15 segundos</item>
+        <item>30 segundos</item>
+        <item>1 minutos</item>
+        <item>5 minutos</item>
+        <item>15 minutos</item>
+        <item>1 hora</item>
+        <item>6 horas</item>
+        <item>12 horas</item>
+        <item>1 día</item>
+        <item>2 días</item>
+        <item>7 días</item>
+    </string-array>
+    <string name="remove_image">Eliminar imagen(es)</string>
+    <string name="no_images_selected_text">Por favor, selecciona al menos una imagen antes de establecer el fondo de pantalla.</string>
+    <string name="processing_images">Procesando imágenes...</string>
+    
+    <!-- Filter and selection strings -->
+    <string name="filter_all">Todos</string>
+    <string name="filter_images_only">Solo Imágenes</string>
+    <string name="filter_videos_only">Solo Videos</string>
+    <string name="select_all">Seleccionar Todo</string>
+    <string name="deselect_all">Deseleccionar Todo</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d elemento seleccionado</item>
+        <item quantity="many">%d elementos seleccionados</item>
+        <item quantity="other">%d elementos seleccionados</item>
+    </plurals>
+    <string name="no_media_message">No hay multimedia agregada aún.\nToca + para agregar imágenes o videos.</string>
+    <string name="no_media_filtered">No se encontraron %s.</string>
+    <string name="media_type_image">imágenes</string>
+    <string name="media_type_video">videos</string>
+</resources>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Slideshow Wallpaper: An Android live wallpaper displaying custom images.
+ * Copyright (C) 2022  Doubi88 <tobis_mail@yahoo.de>
+ *
+ * Slideshow Wallpaper is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Slideshow Wallpaper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+-->
+<resources>
+    <string name="preference_add_images_key" translatable="false">pick_images</string>
+    <string name="preference_seconds_key" translatable="false">seconds</string>
+    <string name="preference_interval_value_key" translatable="false">interval_value</string>
+    <string name="preference_interval_unit_key" translatable="false">interval_unit</string>
+    <string name="preference_swipe_key" translatable="false">swipe</string>
+    <string name="preference_ordering_key" translatable="false">ordering</string>
+    <string name="preference_too_wide_images_rule_key" translatable="false">too_wide_images_rule</string>
+    <string name="preference_preview_key" translatable="false">preview</string>
+    <string name="preference_anti_alias_key" translatable="false">anti_alias</string>
+    <string name="preference_anti_alias_scrolling_key" translatable="false">anti_alias_scrolling</string>
+    <string name="preference_info_key" translatable="false">info</string>
+    <string name="info_screen_version_key" translatable="false">info.version</string>
+    <string name="info_screen_author_key" translatable="false">info.author</string>
+    <string name="info_screen_license_key" translatable="false">info.license</string>
+    <string name="info_screen_source_key" translatable="false">info.source</string>
+
+    <string-array name="ordering_values">
+        <item>selection</item>
+        <item>random</item>
+    </string-array>
+    <string-array name="too_wide_images_rule_values">
+        <item>scroll_forward</item>
+        <item>scroll_backward</item>
+        <item>scale_down</item>
+        <item>scale_up</item>
+    </string-array>
+    <string-array name="seconds_values">
+        <item>10</item>
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>300</item>
+        <item>900</item>
+        <item>3600</item>
+        <item>21600</item>
+        <item>43200</item>
+        <item>86400</item>
+        <item>127800</item>
+        <item>604800</item>
+    </string-array>
+
+    <string-array name="interval_unit_values">
+        <item>1</item> <!-- seconds -->
+        <item>60</item> <!-- minutes -->
+        <item>3600</item> <!-- hours -->
+    </string-array>
+
+</resources>

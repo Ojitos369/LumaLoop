@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Slideshow Wallpaper: An Android live wallpaper displaying custom images.
+ * Copyright (C) 2022  Doubi88 <tobis_mail@yahoo.de>
+ *
+ * Slideshow Wallpaper is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Slideshow Wallpaper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+-->
+<resources>
+    <string name="app_name">Slideshow Wallpaper</string>
+    <string name="preference_edit_image_list">Bilder</string>
+    <string name="preference_ordering">Sortierung</string>
+    <string name="error_reading_file">Fehler beim Lesen der Datei</string>
+    <string name="delete_button_description">Entfernen</string>
+    <string name="preference_seconds">Zeit bis zum Bilderwechsel</string>
+    <plurals name="images_selected">
+        <item quantity="one">%d Bild ausgewählt (max %d)</item>
+        <item quantity="other">%d Bilder ausgewählt (max %d)</item>
+    </plurals>
+    <string name="image_view_description">Bild</string>
+    <string name="settings_name">Einstellungen</string>
+    <string name="image_list_name">Bilder</string>
+    <string name="preference_too_wide_images_rule">Anzeige</string>
+    <string name="preference_preview">Vorschau</string>
+    <string name="preference_preview_summary">Vorschau starten und als aktuellen Hintergrund setzen.</string>
+    <string name="add_image">Bild(er) hinzufügen</string>
+    <string name="preference_anti_alias">Anti-aliasing</string>
+    <string name="preference_anti_alias_scroll">Anti-aliasing beim Scrollen</string>
+    <string name="remove_confirmation_title">Entfernen bestätigen</string>
+    <plurals name="remove_confirmation_message">
+        <item quantity="one">Sind Sie sicher, dass Sie %d Bild aus den Hintergrundbildern entfernen möchten?</item>
+        <item quantity="other">Sind Sie sicher, dass Sie %d Bilder aus den Hintergrundbildern entfernen möchten?</item>
+    </plurals>
+    <string name="positive_action_text">Ja</string>
+    <string name="cancel_action_text">Abbrechen</string>
+    <string name="preference_info">Info</string>
+    <string name="preference_info_summary">Informationen über diese App anzeigen.</string>
+    <string name="info_version_caption">Version</string>
+    <string name="info_author_caption">Autor</string>
+    <string name="info_license_caption">Lizenz</string>
+    <string name="info_sourcecode_caption">Quellcode</string>
+    <string name="error_title">Fehler</string>
+    <string name="no_wallpaper_activity_text">Leider unterstützt dieses Gerät den Start der Vorschau von hier aus nicht. Bitte wähle „Slideshow Wallpaper” als Livehintergrund in den Systemeinstellungen.</string>
+    <string-array name="orderings">
+        <item>Auswahlreihenfolge</item>
+        <item>Zufällig</item>
+    </string-array>
+    <string-array name="too_wide_images_rules">
+        <item>Mit den Homescreens scrollen</item>
+        <item>Mit den Homescreens in entgegengesetzter Richtung scrollen</item>
+        <item>Passend</item>
+        <item>Zoomen</item>
+    </string-array>
+    <string-array name="seconds">
+        <item>10 Sek.</item>
+        <item>15 Sek.</item>
+        <item>30 Sek.</item>
+        <item>1 Min.</item>
+        <item>5 Min.</item>
+        <item>15 Min.</item>
+        <item>1 Std.</item>
+        <item>6 Std.</item>
+        <item>12 Std.</item>
+        <item>1 Tag</item>
+        <item>2 Tage</item>
+        <item>7 Tage</item>
+    </string-array>
+    <string name="remove_image">Bild(er) entfernen</string>
+    <string name="no_images_selected_text">Bitte wähle mindestens ein Bild aus, bevor du das Hintergrundbild festlegst.</string>
+</resources>

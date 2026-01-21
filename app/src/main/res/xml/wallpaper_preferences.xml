@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ * Slideshow Wallpaper: An Android live wallpaper displaying custom images.
+ * Copyright (C) 2022  Doubi88 <tobis_mail@yahoo.de>
+ *
+ * Slideshow Wallpaper is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Slideshow Wallpaper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+-->
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:key="@string/preference_add_images_key"
+        android:title="@string/preference_edit_image_list"
+        app:icon="@drawable/outline_image_list_24">
+        <intent
+            android:targetClass="com.ojitos369.lumaloop.preferences.imageList.ImageListActivity"
+            android:targetPackage="com.ojitos369.lumaloop" />
+    </Preference>
+    <ListPreference android:key="@string/preference_ordering_key"
+        android:title="@string/preference_ordering"
+        android:entries="@array/orderings"
+        android:entryValues="@array/ordering_values"
+        app:icon="@drawable/outline_ordering_24"
+        />
+    <PreferenceCategory android:title="@string/preference_seconds">
+        <EditTextPreference
+            android:key="@string/preference_interval_value_key"
+            android:title="@string/preference_interval_value"
+            android:defaultValue="60"
+            android:inputType="number"
+            app:icon="@drawable/outline_delay_24"/>
+        <ListPreference
+            android:key="@string/preference_interval_unit_key"
+            android:title="@string/preference_interval_unit"
+            android:entries="@array/interval_units"
+            android:entryValues="@array/interval_unit_values"
+            android:defaultValue="1"
+            app:icon="@drawable/outline_delay_24"/>
+    </PreferenceCategory>
+
+    <SwitchPreferenceCompat
+        android:key="@string/preference_mute_videos_key"
+        android:title="@string/preference_mute_videos"
+        android:defaultValue="true"
+        app:icon="@drawable/baseline_volume_off_24"/>
+
+    <SwitchPreferenceCompat
+        android:key="@string/preference_swipe_key"
+        android:title="@string/preference_swipe"
+        android:defaultValue="true"
+        app:icon="@drawable/baseline_preview_24"/>
+
+    <ListPreference
+        android:key="@string/preference_too_wide_images_rule_key"
+        android:title="@string/preference_too_wide_images_rule"
+        android:entries="@array/too_wide_images_rules"
+        android:entryValues="@array/too_wide_images_rule_values"
+        app:icon="@drawable/baseline_aspect_ratio_24" />
+    <CheckBoxPreference android:title="@string/preference_anti_alias"
+        android:key="@string/preference_anti_alias_key"
+        android:defaultValue="true"
+        app:icon="@drawable/baseline_anti_aliasing_24" />
+    <CheckBoxPreference android:title="@string/preference_anti_alias_scroll"
+        android:key="@string/preference_anti_alias_scrolling_key"
+        android:dependency="@string/preference_anti_alias_key"
+        android:defaultValue="true"
+        app:icon="@drawable/baseline_anti_aliasing_24" />
+    <Preference android:title="@string/preference_preview"
+        android:key="@string/preference_preview_key"
+        android:summary="@string/preference_preview_summary"
+        app:icon="@drawable/baseline_preview_24" />
+    <Preference android:title="@string/preference_info"
+        android:key="@string/preference_info_key"
+        android:summary="@string/preference_info_summary"
+        android:icon="@drawable/outline_info_24">
+        <intent
+            android:targetClass="com.ojitos369.lumaloop.infoScreen.InfoScreenActivity"
+            android:targetPackage="com.ojitos369.lumaloop" />
+    </Preference>
+</PreferenceScreen>

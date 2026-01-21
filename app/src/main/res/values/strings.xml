@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+/*
+ * Slideshow Wallpaper: An Android live wallpaper displaying custom images.
+ * Copyright (C) 2022  Doubi88 <tobis_mail@yahoo.de>
+ *
+ * Slideshow Wallpaper is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Slideshow Wallpaper is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+-->
+<resources>
+    <string name="app_name">LumaLoop</string>
+    <string name="preference_edit_image_list">Images</string>
+    <string name="preference_ordering">Ordering</string>
+    <string name="error_reading_file">Error reading file</string>
+    <string name="delete_button_description">Remove</string>
+    <string name="preference_seconds">Image Change Interval</string>
+    <string name="preference_interval_value">Interval</string>
+    <string name="preference_interval_unit">Unit</string>
+    <string name="preference_swipe">Swipe to change image</string>
+    <plurals name="images_selected">
+        <item quantity="one">%d image selected (max. %d)</item>
+        <item quantity="other">%d images selected (max. %d)</item>
+    </plurals>
+    <string name="image_view_description">Image</string>
+    <string name="settings_name">Settings</string>
+    <string name="image_list_name">Images</string>
+    <string name="preference_too_wide_images_rule">Display</string>
+    <string name="preference_preview">Preview</string>
+    <string name="preference_preview_summary">Preview and set as current wallpaper.</string>
+    <string name="add_image">Add Image(s)</string>
+    <string name="preference_anti_alias">Anti-aliasing</string>
+    <string name="preference_anti_alias_scroll">Anti-aliasing while scrolling</string>
+    <string name="remove_image">Remove Image(s)</string>
+    <string name="remove_confirmation_title">Confirm removal</string>
+    <plurals name="remove_confirmation_message">
+        <item quantity="one">Are you sure you want to remove %d image from the wallpapers?</item>
+        <item quantity="other">Are you sure you want to remove %d images from the wallpapers?</item>
+    </plurals>
+    <string name="positive_action_text">Yes</string>
+    <string name="cancel_action_text">Cancel</string>
+    <string name="preference_info">Info</string>
+    <string name="preference_info_summary">Display information about this app</string>
+
+    <string name="preference_mute_videos">Mute videos</string>
+    <string name="preference_mute_videos_key" translatable="false">mute_videos</string>
+
+    <string name="info_version_caption">Version</string>
+    <string name="info_author_caption">Author</string>
+    <string name="info_license_caption">License</string>
+    <string name="info_sourcecode_caption">Source Code</string>
+    <string name="error_title">Error</string>
+    <string name="no_wallpaper_activity_text">Unfortunately your device does not support starting the wallpaper preview from here. Please select \"Slideshow Wallpaper\" as your live wallpaper in the system settings.</string>
+    <string name="author_name" translatable="false">Doubi88</string>
+    <string name="author_email" translatable="false">tobis_mail@yahoo.de</string>
+    <string name="author_email_url" translatable="false">mailto:tobis_mail@yahoo.de</string>
+    <string name="license" translatable="false">GNU General Public License, Version 3.0</string>
+    <string name="license_url" translatable="false">https://github.com/Doubi88/SlideshowWallpaper/blob/master/LICENSE</string>
+    <string name="source_url" translatable="false">https://github.com/Doubi88/SlideshowWallpaper</string>
+    <string-array name="orderings">
+        <item>Selection order</item>
+        <item>Random</item>
+    </string-array>
+    <string-array name="too_wide_images_rules">
+        <item>Scroll with home screens</item>
+        <item>Scroll with home screens in opposite direction</item>
+        <item>Scale down to fit</item>
+        <item>Scale up to fit</item>
+    </string-array>
+    <string-array name="seconds">
+        <item>10 sec</item>
+        <item>15 sec</item>
+        <item>30 sec</item>
+        <item>1 min</item>
+        <item>5 min</item>
+        <item>15 min</item>
+        <item>1 hour</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>1 day</item>
+        <item>2 days</item>
+        <item>7 days</item>
+    </string-array>
+
+    <string-array name="interval_units">
+        <item>Seconds</item>
+        <item>Minutes</item>
+        <item>Hours</item>
+    </string-array>
+    <string name="no_images_selected_text">Please select at least one image before setting the wallpaper.</string>
+    <string name="processing_images">Processing images...</string>
+    
+    <!-- Filter and selection strings -->
+    <string name="filter_all">All</string>
+    <string name="filter_images_only">Images Only</string>
+    <string name="filter_videos_only">Videos Only</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d item selected</item>
+        <item quantity="other">%d items selected</item>
+    </plurals>
+    <string name="no_media_message">No media added yet.\nTap + to add images or videos.</string>
+    <string name="no_media_filtered">No %s found.</string>
+    <string name="media_type_image">Image</string>
+    <string name="media_type_video">Video</string>
+</resources>
