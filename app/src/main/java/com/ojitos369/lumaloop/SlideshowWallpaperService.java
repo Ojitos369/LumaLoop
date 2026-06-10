@@ -44,6 +44,17 @@ public class SlideshowWallpaperService extends WallpaperService {
         private GestureDetector gestureDetector;
         private boolean surfaceReady = false;
 
+        // Two-finger double-tap (toggles video sound)
+        private static final long TWO_FINGER_TAP_TIMEOUT_MS = 250;
+        private static final long TWO_FINGER_DOUBLE_TAP_WINDOW_MS = 400;
+        private static final float TWO_FINGER_MOVE_SLOP_PX = 60f;
+        private boolean twoFingerGesture = false;
+        private boolean twoFingerMoved = false;
+        private long twoFingerDownTime = 0;
+        private long lastTwoFingerTapTime = 0;
+        private float twoFingerStartX = 0f;
+        private float twoFingerStartY = 0f;
+
         SlideshowWallpaperEngine() {
             // Use default SharedPreferences to match WallpaperPreferencesFragment
             sharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -96,8 +107,83 @@ public class SlideshowWallpaperService extends WallpaperService {
         @Override
         public void onTouchEvent(MotionEvent event) {
             super.onTouchEvent(event);
-            if (gestureDetector != null)
-                gestureDetector.onTouchEvent(event);
+
+            handleTwoFingerDoubleTap(event);
+
+            if (gestureDetector != null) {
+                if (event.getPointerCount() > 1) {
+                    // Second finger landed: cancel the single-finger detector so a
+                    // two-finger double tap never also fires onDoubleTap (play/pause)
+                    MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    gestureDetector.onTouchEvent(cancel);
+                    cancel.recycle();
+                } else {
+                    gestureDetector.onTouchEvent(event);
+                }
+            }
+        }
+
+        private void handleTwoFingerDoubleTap(MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    twoFingerGesture = false;
+                    twoFingerMoved = false;
+                    break;
+                case MotionEvent.ACTION_POINTER_DOWN:
+                    if (event.getPointerCount() == 2) {
+                        twoFingerGesture = true;
+                        twoFingerMoved = false;
+                        twoFingerDownTime = event.getEventTime();
+                        twoFingerStartX = (event.getX(0) + event.getX(1)) / 2f;
+                        twoFingerStartY = (event.getY(0) + event.getY(1)) / 2f;
+                    } else {
+                        // 3+ fingers: not our gesture
+                        twoFingerGesture = false;
+                    }
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (twoFingerGesture && event.getPointerCount() >= 2) {
+                        float cx = (event.getX(0) + event.getX(1)) / 2f;
+                        float cy = (event.getY(0) + event.getY(1)) / 2f;
+                        if (Math.hypot(cx - twoFingerStartX, cy - twoFingerStartY)
+                                > TWO_FINGER_MOVE_SLOP_PX) {
+                            twoFingerMoved = true;
+                        }
+                    }
+                    break;
+                case MotionEvent.ACTION_POINTER_UP:
+                    if (twoFingerGesture && event.getPointerCount() == 2) {
+                        long duration = event.getEventTime() - twoFingerDownTime;
+                        if (!twoFingerMoved && duration < TWO_FINGER_TAP_TIMEOUT_MS) {
+                            long now = event.getEventTime();
+                            if (now - lastTwoFingerTapTime < TWO_FINGER_DOUBLE_TAP_WINDOW_MS) {
+                                lastTwoFingerTapTime = 0;
+                                toggleVideoSound();
+                            } else {
+                                lastTwoFingerTapTime = now;
+                            }
+                        }
+                        twoFingerGesture = false;
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    twoFingerGesture = false;
+                    break;
+            }
+        }
+
+        private void toggleVideoSound() {
+            if (currentMediaHandler == null || currentMediaHandler.getCurrentMedia() == null
+                    || !currentMediaHandler.getCurrentMedia().isVideo()) {
+                return;
+            }
+            boolean newMuted = !manager.getMuteVideos();
+            // Persist so the Settings switch stays in sync
+            sharedPrefs.edit().putBoolean("mute_videos", newMuted).apply();
+            currentMediaHandler.applyMute(newMuted);
+            Log.d(TAG, "Two-finger double tap: mute=" + newMuted);
         }
 
         @Override

@@ -389,6 +389,16 @@ public class CurrentMediaHandler {
         startPlayback();
     }
 
+    /**
+     * Applies mute state to the active player immediately (normally the
+     * mute preference is only read when a new media item is loaded).
+     */
+    public void applyMute(boolean muted) {
+        if (exoPlayer != null) {
+            exoPlayer.setVolume(muted ? 0f : 1f);
+        }
+    }
+
     private void startPlayback() {
         if (exoPlayer != null && !exoPlayer.isPlaying()) {
             exoPlayer.play();

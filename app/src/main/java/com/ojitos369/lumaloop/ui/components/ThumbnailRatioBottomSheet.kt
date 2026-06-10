@@ -28,11 +28,11 @@ fun ThumbnailRatioBottomSheet(
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
             )
             
+            // Only ratios the gallery zoom cycle supports (see GalleryScreen ratioList)
             val ratios = listOf(
+                "9:16" to "9:16 (Tall)",
                 "3:4" to "3:4 (Portrait)",
-                "1:1" to "1:1 (Square)",
-                "4:3" to "4:3 (Landscape)",
-                "Natural" to "Natural (Original)"
+                "1:1" to "1:1 (Square)"
             )
             
             ratios.forEach { (value, label) ->

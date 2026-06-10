@@ -26,9 +26,24 @@ class SettingsViewModel(private val preferencesManager: SharedPreferencesManager
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    // Reload whenever any preference changes (e.g. gallery pinch-zoom updates
+    // thumbnail_ratio/gallery_columns, tag screens update hidden/available tags)
+    private val prefListener =
+            android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+                loadSettings()
+            }
+
     init {
         loadSettings()
+        preferencesManager.preferences.registerOnSharedPreferenceChangeListener(prefListener)
     }
+
+    override fun onCleared() {
+        preferencesManager.preferences.unregisterOnSharedPreferenceChangeListener(prefListener)
+        super.onCleared()
+    }
+
+    fun refresh() = loadSettings()
 
     private fun loadSettings() {
         val prefs = preferencesManager.preferences

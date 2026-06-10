@@ -42,18 +42,17 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun SlideshowWallpaperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Dynamic color disabled: neumorphism needs a fixed monochromatic base,
+    // wallpaper-derived tints would break the single-surface-color rule.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> DarkColorScheme // Default to dark theme for consistency
+        else -> DarkColorScheme
     }
 
     MaterialTheme(

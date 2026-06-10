@@ -15,6 +15,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.*
@@ -57,6 +58,7 @@ import com.ojitos369.lumaloop.ui.components.MediaCard
 import com.ojitos369.lumaloop.ui.components.TagFilterBottomSheet
 import com.ojitos369.lumaloop.ui.components.TagFilterModeBottomSheet
 import com.ojitos369.lumaloop.ui.components.VideoPlayerDialog
+import com.ojitos369.lumaloop.ui.theme.neumorphic
 import java.io.File
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -509,34 +511,30 @@ fun GalleryScreen(
     val gridState = rememberLazyStaggeredGridState()
 
     Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                // Filter chips
                 Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 3.dp
+                        color = MaterialTheme.colorScheme.background
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                                modifier =
-                                        Modifier.fillMaxWidth()
-                                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text("Filter by Tags:", style = MaterialTheme.typography.labelMedium, modifier = Modifier.align(Alignment.CenterVertically))
-                        }
-
-                        // Tag filter button - shows count of active filters
+                        // Single compact row: filter + clear + sort
                         Row(
                                 modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                                        .padding(horizontal = 16.dp, vertical = 8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically
                         ) {
                             FilledTonalButton(
                                 onClick = { showTagFilterSheet = true },
-                                modifier = Modifier.weight(1f)
+                                colors = ButtonDefaults.filledTonalButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    contentColor = MaterialTheme.colorScheme.onSurface
+                                ),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .neumorphic(cornerRadius = 20.dp, elevation = 3.dp, blur = 6.dp)
                             ) {
                                 Icon(Icons.Default.FilterList, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
@@ -647,26 +645,17 @@ fun GalleryScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Navigation Buttons
-                    if (filteredItems.isNotEmpty() && (gridState.firstVisibleItemIndex > 0 || gridState.isScrollInProgress)) {
-                        SmallFloatingActionButton(
-                            onClick = { coroutineScope.launch { gridState.animateScrollToItem(0) } }
-                        ) {
-                            Icon(Icons.Default.ArrowUpward, contentDescription = "Go to Top")
-                        }
-                        SmallFloatingActionButton(
-                            onClick = { coroutineScope.launch { gridState.animateScrollToItem(filteredItems.size - 1) } }
-                        ) {
-                            Icon(Icons.Default.ArrowDownward, contentDescription = "Go to Bottom")
-                        }
-                    }
-
                     // Delete FAB (only show when items selected)
                     if (uiState.selectedItems.isNotEmpty()) {
                         FloatingActionButton(
                                 onClick = { viewModel.removeSelectedItems() },
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                                modifier = Modifier.neumorphic(
+                                    cornerRadius = 16.dp, elevation = 5.dp, blur = 10.dp,
+                                    backgroundColor = MaterialTheme.colorScheme.errorContainer
+                                )
                         ) { Icon(Icons.Default.Delete, contentDescription = "Delete selected") }
                     }
 
@@ -679,7 +668,14 @@ fun GalleryScreen(
                                                         .ImageAndVideo
                                         )
                                 )
-                            }
+                            },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                            modifier = Modifier.neumorphic(
+                                cornerRadius = 16.dp, elevation = 5.dp, blur = 10.dp,
+                                backgroundColor = MaterialTheme.colorScheme.primaryContainer
+                            )
                     ) { Icon(Icons.Default.Add, contentDescription = "Add media") }
                 }
             }
@@ -718,12 +714,16 @@ fun GalleryScreen(
                         awaitEachGesture {
                             awaitFirstDown(requireUnconsumed = false)
                             var previousDistance = -1f
-                            
+                            var isPinching = false
+
                             do {
                                 val event = awaitPointerEvent(PointerEventPass.Initial)
                                 val changes = event.changes.filter { it.pressed }
-                                
+
                                 if (changes.size >= 2) {
+                                    isPinching = true
+                                    // Consume so cards below never see taps while pinching
+                                    event.changes.forEach { it.consume() }
                                     var totalDistance = 0f
                                     var count = 0
                                     for (i in 0 until changes.size - 1) {
@@ -761,6 +761,11 @@ fun GalleryScreen(
                                     previousDistance = currentDistance
                                 } else {
                                     previousDistance = -1f
+                                    if (isPinching) {
+                                        // Keep consuming the gesture tail (finger lift)
+                                        // so no click/long-click fires on release
+                                        event.changes.forEach { it.consume() }
+                                    }
                                 }
                             } while (event.changes.any { change -> change.pressed })
                         }
@@ -814,6 +819,111 @@ fun GalleryScreen(
                             } else null,
                             modifier = Modifier.fillMaxWidth()
                         )
+                    }
+                }
+
+                // Auto-hiding draggable fast-scroll thumb
+                var isThumbDragging by remember { mutableStateOf(false) }
+                var thumbVisible by remember { mutableStateOf(false) }
+                LaunchedEffect(gridState.isScrollInProgress, isThumbDragging) {
+                    if (gridState.isScrollInProgress || isThumbDragging) {
+                        thumbVisible = true
+                    } else {
+                        delay(1500)
+                        thumbVisible = false
+                    }
+                }
+                // Continuous progress: item index + sub-item offset, scaled by
+                // column count (staggered grid indices advance ~columnCount per row)
+                val scrollFraction by remember(columnCount) {
+                    derivedStateOf {
+                        val info = gridState.layoutInfo
+                        val scrollable = info.totalItemsCount - info.visibleItemsInfo.size
+                        if (scrollable <= 0) 0f
+                        else {
+                            val itemHeight = info.visibleItemsInfo
+                                .firstOrNull()?.size?.height?.takeIf { it > 0 } ?: 1
+                            val partial =
+                                gridState.firstVisibleItemScrollOffset.toFloat() / itemHeight
+                            ((gridState.firstVisibleItemIndex + partial * columnCount) /
+                                scrollable.toFloat()).coerceIn(0f, 1f)
+                        }
+                    }
+                }
+
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = thumbVisible,
+                    enter = androidx.compose.animation.fadeIn(),
+                    exit = androidx.compose.animation.fadeOut(),
+                    modifier = Modifier.align(Alignment.CenterEnd).fillMaxHeight()
+                ) {
+                    BoxWithConstraints(
+                        modifier = Modifier.fillMaxHeight().width(20.dp)
+                    ) {
+                        val thumbHeight = 64.dp
+                        val trackPx = constraints.maxHeight.toFloat()
+                        val thumbPx = with(androidx.compose.ui.platform.LocalDensity.current) {
+                            thumbHeight.toPx()
+                        }
+                        val maxOffset = (trackPx - thumbPx).coerceAtLeast(0f)
+
+                        // Local accumulator: the derived fraction is item-granular and
+                        // lags the gesture, so accumulating on it resets small drags
+                        var dragOffsetPx by remember { mutableStateOf(0f) }
+                        val thumbOffsetPx =
+                            if (isThumbDragging) dragOffsetPx
+                            else scrollFraction * maxOffset
+
+                        Box(
+                            // Drag anywhere on the 20dp edge strip while the thumb is visible
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .pointerInput(maxOffset) {
+                                    detectVerticalDragGestures(
+                                        onDragStart = { startOffset ->
+                                            isThumbDragging = true
+                                            dragOffsetPx =
+                                                (startOffset.y - thumbPx / 2f)
+                                                    .coerceIn(0f, maxOffset)
+                                        },
+                                        onDragEnd = { isThumbDragging = false },
+                                        onDragCancel = { isThumbDragging = false }
+                                    ) { change, dragAmount ->
+                                        change.consume()
+                                        dragOffsetPx =
+                                            (dragOffsetPx + dragAmount).coerceIn(0f, maxOffset)
+                                        val info = gridState.layoutInfo
+                                        val scrollable =
+                                            info.totalItemsCount - info.visibleItemsInfo.size
+                                        if (scrollable > 0 && maxOffset > 0f) {
+                                            val fraction = dragOffsetPx / maxOffset
+                                            val target = (fraction * scrollable)
+                                                .roundToInt()
+                                                .coerceIn(0, info.totalItemsCount - 1)
+                                            coroutineScope.launch {
+                                                gridState.scrollToItem(target)
+                                            }
+                                        }
+                                    }
+                                }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset {
+                                        IntOffset(0, thumbOffsetPx.roundToInt())
+                                    }
+                                    .padding(end = 4.dp)
+                                    .width(6.dp)
+                                    .height(thumbHeight)
+                                    .background(
+                                        MaterialTheme.colorScheme.primary.copy(
+                                            alpha = if (isThumbDragging) 1f else 0.75f
+                                        ),
+                                        androidx.compose.foundation.shape.RoundedCornerShape(3.dp)
+                                    )
+                            )
+                        }
                     }
                 }
             }

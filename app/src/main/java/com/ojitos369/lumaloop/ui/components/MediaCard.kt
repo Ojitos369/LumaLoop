@@ -4,9 +4,9 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -14,8 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Crop
 import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.ojitos369.lumaloop.ui.theme.neumorphic
 import com.ojitos369.lumaloop.ui.utils.VideoThumbnailLoader
 import kotlinx.coroutines.launch
 
@@ -84,9 +83,17 @@ fun MediaCard(
         else -> 3f / 4f  // Default
     }
     
-    Card(
+    val cardShape = RoundedCornerShape(20.dp)
+    Box(
         modifier = modifier
             .then(if (aspectRatio != null) Modifier.aspectRatio(aspectRatio) else Modifier)
+            .scale(scale)
+            .neumorphic(cornerRadius = 20.dp, elevation = 4.dp, blur = 8.dp)
+            .then(
+                if (isSelected) {
+                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary, cardShape)
+                } else Modifier
+            )
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = {
@@ -94,10 +101,6 @@ fun MediaCard(
                     onLongClick()
                 }
             )
-            .scale(scale),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 8.dp else 2.dp),
-        border = if (isSelected) BorderStroke(3.dp, MaterialTheme.colorScheme.primary) else null
     ) {
         Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             if (isVideo) {

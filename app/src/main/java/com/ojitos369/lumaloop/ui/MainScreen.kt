@@ -2,15 +2,21 @@ package com.ojitos369.lumaloop.ui
 
 import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -18,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ojitos369.lumaloop.ui.navigation.NavigationDestination
+import com.ojitos369.lumaloop.ui.theme.neumorphic
 import com.ojitos369.lumaloop.ui.screens.GalleryScreen
 import com.ojitos369.lumaloop.ui.screens.PreviewScreen
 import com.ojitos369.lumaloop.ui.screens.SettingsScreen
@@ -34,15 +41,31 @@ fun MainScreen(sharedUris: List<Uri>? = null, activity: ComponentActivity) {
     )
     
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            NavigationBar {
+            // Floating neumorphic pill bar
+            NavigationBar(
+                containerColor = Color.Transparent,
+                windowInsets = WindowInsets(0, 0, 0, 0),
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .padding(start = 20.dp, end = 20.dp, bottom = 10.dp)
+                    .neumorphic(cornerRadius = 28.dp)
+            ) {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
-                
+
                 items.forEach { destination ->
                     NavigationBarItem(
                         icon = { Icon(destination.icon, contentDescription = destination.title) },
                         label = { Text(destination.title) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
                         selected = currentDestination?.hierarchy?.any { it.route == destination.route } == true,
                         onClick = {
                             navController.navigate(destination.route) {

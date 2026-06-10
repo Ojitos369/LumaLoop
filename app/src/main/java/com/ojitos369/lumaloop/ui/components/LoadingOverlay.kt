@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.ojitos369.lumaloop.ui.theme.neumorphic
 
 /**
  * Modern, elegant loading overlay for file operations. Shows animated progress with file count and
@@ -88,13 +89,16 @@ fun LoadingOverlay(
     ) {
         // Main container card
         Card(
-                modifier = Modifier.widthIn(min = 280.dp, max = 340.dp).padding(24.dp),
+                modifier =
+                        Modifier.widthIn(min = 280.dp, max = 340.dp)
+                                .padding(24.dp)
+                                .neumorphic(cornerRadius = 24.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors =
                         CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
         ) {
             Column(
                     modifier = Modifier.fillMaxWidth().padding(28.dp),

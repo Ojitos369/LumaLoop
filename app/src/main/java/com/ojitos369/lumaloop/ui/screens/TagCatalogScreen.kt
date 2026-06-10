@@ -17,8 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.graphics.Color
 import com.ojitos369.lumaloop.preferences.SharedPreferencesManager
 import com.ojitos369.lumaloop.ui.components.LoadingOverlay
+import com.ojitos369.lumaloop.ui.theme.neumorphic
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,8 +55,12 @@ fun TagCatalogScreen(
     var specificAutotagTag by remember { mutableStateOf<String?>(null) }
     
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
                 title = { Text("Tag Catalog") },
                 actions = {
                     IconButton(onClick = { showAutotagConfirm = true }) {
@@ -111,7 +117,16 @@ fun TagCatalogScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddDialog = true }) {
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                modifier = Modifier.neumorphic(
+                    cornerRadius = 16.dp, elevation = 5.dp, blur = 10.dp,
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Tag")
             }
         }
@@ -122,14 +137,17 @@ fun TagCatalogScreen(
                     Text("No tags in catalog. Add some or use images/videos.")
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
                     items(uiState.tags) { tagInfo ->
                         TagItem(
                             tagInfo = tagInfo,
                             onRename = { showRenameDialog = tagInfo },
                             onDelete = { showDeleteConfirm = tagInfo }
                         )
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     }
                 }
             }
@@ -267,14 +285,15 @@ fun TagItem(
     onDelete: () -> Unit
 ) {
     ListItem(
-        headlineContent = { 
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        headlineContent = {
             Text(
                 text = tagInfo.name,
                 fontWeight = FontWeight.Bold
-            ) 
+            )
         },
-        supportingContent = { 
-            Text(text = "${tagInfo.count} items associated") 
+        supportingContent = {
+            Text(text = "${tagInfo.count} items associated")
         },
         trailingContent = {
             if (!tagInfo.isSystemTag) {
@@ -288,6 +307,8 @@ fun TagItem(
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .neumorphic(cornerRadius = 20.dp, elevation = 4.dp, blur = 8.dp)
     )
 }
