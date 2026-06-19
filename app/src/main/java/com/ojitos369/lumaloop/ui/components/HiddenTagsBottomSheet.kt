@@ -16,10 +16,12 @@ fun HiddenTagsBottomSheet(
     availableTags: Set<String>,
     hiddenTags: Set<String>,
     onDismiss: () -> Unit,
-    onSave: (Set<String>) -> Unit
+    onSave: (Set<String>) -> Unit,
+    title: String = "Hidden Tags",
+    description: String = "Media with these tags will be hidden from gallery and wallpaper."
 ) {
     var currentHidden by remember { mutableStateOf(hiddenTags) }
-    
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = Modifier.fillMaxWidth()
@@ -31,12 +33,12 @@ fun HiddenTagsBottomSheet(
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = "Hidden Tags",
+                text = title,
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             Text(
-                text = "Media with these tags will be hidden from gallery and wallpaper.",
+                text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)

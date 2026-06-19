@@ -47,14 +47,22 @@ public class SharedPreferencesManager {
     private static final String PREFERENCE_KEY_ACTIVE_TAGS = "active_tags";
     private static final String PREFERENCE_KEY_TAG_FILTER_MODE = "tag_filter_mode";
     private static final String PREFERENCE_KEY_HIDDEN_TAGS = "hidden_tags";
+    private static final String PREFERENCE_KEY_IGNORED_FILTER_TAGS = "ignored_filter_tags";
+    private static final String PREFERENCE_KEY_LAST_BACKUP_URI = "last_backup_uri";
     private static final String PREFERENCE_KEY_AUTO_TAG_ENABLED = "auto_tag_enabled";
     private static final String PREFERENCE_KEY_TAG_CATALOG = "tag_catalog";
 
     public enum TagFilterMode {
-        AND("and"),
-        OR("or"),
-        XAND("xand"),
-        XOR("xor");
+        // Positive modes: keep an item if it matches
+        HAS_ALL("and"),          // has all selected tags (may have more)
+        HAS_ANY("or"),           // has at least one selected tag (may have more)
+        ONLY_SELECTED("only"),   // has only selected tags, nothing else (one or more)
+        EXACTLY_ALL("exact"),    // has exactly all selected tags and nothing else
+        // Negative modes (the opposite of each positive one)
+        NOT_ANY("not_any"),      // has none of the selected tags
+        NOT_ALL("xand"),         // does not have all of the selected tags
+        NOT_ONLY("not_only"),    // exclude only items whose tags are selected-only
+        NOT_EXACTLY("not_exact");// exclude only items having exactly the selected tags
 
         private final String value;
         TagFilterMode(String value) { this.value = value; }
@@ -63,7 +71,49 @@ public class SharedPreferencesManager {
             for (TagFilterMode mode : values()) {
                 if (mode.value.equals(value)) return mode;
             }
-            return OR; // Default
+            return HAS_ANY; // Default
+        }
+    }
+
+    /**
+     * Single source of truth for tag filtering. Returns whether an item with
+     * {@code itemTags} should be kept given the {@code activeTags} and {@code mode}.
+     * Callers must handle the empty-activeTags case before calling (keep everything).
+     */
+    public static boolean matchesTagFilter(java.util.Collection<String> itemTags,
+                                            java.util.Set<String> activeTags,
+                                            java.util.Set<String> ignoredTags,
+                                            TagFilterMode mode) {
+        // Ignored tags are not considered by any of the filtering methods:
+        // strip them from both the item tags and the active selection.
+        java.util.Set<String> active = new java.util.HashSet<>(activeTags);
+        if (ignoredTags != null) active.removeAll(ignoredTags);
+        // Once ignored tags are removed there may be no effective selection left:
+        // treat that as "no filter active" and keep the item.
+        if (active.isEmpty()) return true;
+
+        java.util.Set<String> t = new java.util.HashSet<>(itemTags);
+        if (ignoredTags != null) t.removeAll(ignoredTags);
+        activeTags = active;
+        boolean hasAny = false;
+        for (String tag : activeTags) {
+            if (t.contains(tag)) { hasAny = true; break; }
+        }
+        boolean hasAll = t.containsAll(activeTags);
+        // every tag on the item is a selected one, and the item has at least one tag
+        boolean onlySelected = !t.isEmpty() && activeTags.containsAll(t);
+        // item tag set equals the active tag set exactly
+        boolean exactlyAll = hasAll && activeTags.containsAll(t);
+        switch (mode) {
+            case HAS_ALL:       return hasAll;
+            case HAS_ANY:       return hasAny;
+            case ONLY_SELECTED: return onlySelected;
+            case EXACTLY_ALL:   return exactlyAll;
+            case NOT_ANY:       return !hasAny;
+            case NOT_ALL:       return !hasAll;
+            case NOT_ONLY:      return !onlySelected;
+            case NOT_EXACTLY:   return !exactlyAll;
+            default:            return hasAny;
         }
     }
 
@@ -533,6 +583,23 @@ public class SharedPreferencesManager {
         preferences.edit().putStringSet(PREFERENCE_KEY_HIDDEN_TAGS, tags).apply();
     }
 
+    /** Remembers where the last tag backup was written, so Import can open that folder. */
+    public String getLastBackupUri() {
+        return preferences.getString(PREFERENCE_KEY_LAST_BACKUP_URI, null);
+    }
+
+    public void setLastBackupUri(String uri) {
+        preferences.edit().putString(PREFERENCE_KEY_LAST_BACKUP_URI, uri).apply();
+    }
+
+    public java.util.Set<String> getIgnoredFilterTags() {
+        return preferences.getStringSet(PREFERENCE_KEY_IGNORED_FILTER_TAGS, new java.util.HashSet<>());
+    }
+
+    public void setIgnoredFilterTags(java.util.Set<String> tags) {
+        preferences.edit().putStringSet(PREFERENCE_KEY_IGNORED_FILTER_TAGS, tags).apply();
+    }
+
     public boolean isAutoTagEnabled() {
         return preferences.getBoolean(PREFERENCE_KEY_AUTO_TAG_ENABLED, false);
     }
@@ -545,6 +612,7 @@ public class SharedPreferencesManager {
         List<Uri> allUris = getImageUrisBase();
         java.util.Set<String> activeTags = getActiveTags();
         java.util.Set<String> hiddenTags = getHiddenTags();
+        java.util.Set<String> ignoredTags = getIgnoredFilterTags();
         TagFilterMode mode = getTagFilterMode();
         
         List<Uri> filtered = new ArrayList<>();
@@ -566,31 +634,7 @@ public class SharedPreferencesManager {
                 continue;
             }
 
-            boolean match = false;
-            switch (mode) {
-                case AND:
-                    match = new java.util.HashSet<>(uriTags).containsAll(activeTags);
-                    break;
-                case OR:
-                    for (String tag : activeTags) {
-                        if (uriTags.contains(tag)) {
-                            match = true;
-                            break;
-                        }
-                    }
-                    break;
-                case XAND:
-                    match = !new java.util.HashSet<>(uriTags).containsAll(activeTags);
-                    break;
-                case XOR:
-                    int count = 0;
-                    for (String tag : activeTags) {
-                        if (uriTags.contains(tag)) count++;
-                    }
-                    match = (count == 1);
-                    break;
-            }
-            if (match) {
+            if (matchesTagFilter(uriTags, activeTags, ignoredTags, mode)) {
                 filtered.add(uri);
             }
         }
@@ -606,6 +650,7 @@ public class SharedPreferencesManager {
         data.catalog = getMasterTagList();
         data.activeTags = getActiveTags();
         data.hiddenTags = getHiddenTags();
+        data.ignoredFilterTags = getIgnoredFilterTags();
         data.tagFilterMode = getTagFilterMode().getValue();
         data.autoTagEnabled = isAutoTagEnabled();
 
@@ -696,6 +741,7 @@ public class SharedPreferencesManager {
         // Import Settings
         if (data.activeTags != null) setActiveTags(data.activeTags);
         if (data.hiddenTags != null) setHiddenTags(data.hiddenTags);
+        if (data.ignoredFilterTags != null) setIgnoredFilterTags(data.ignoredFilterTags);
         if (data.tagFilterMode != null) setTagFilterMode(TagFilterMode.fromValue(data.tagFilterMode));
         setAutoTagEnabled(data.autoTagEnabled);
     }

@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.compose.ui.graphics.Color
 import com.ojitos369.lumaloop.preferences.SharedPreferencesManager
 import com.ojitos369.lumaloop.ui.components.LoadingOverlay
@@ -37,11 +41,23 @@ fun TagCatalogScreen(
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        uri?.let { viewModel.exportTags(it) }
+        uri?.let {
+            viewModel.exportTags(it)
+            // Remember the folder so Import opens here next time.
+            preferencesManager.setLastBackupUri(it.toString())
+        }
     }
 
     val importLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
+        contract = object : ActivityResultContracts.OpenDocument() {
+            override fun createIntent(context: Context, input: Array<String>): Intent {
+                val intent = super.createIntent(context, input)
+                preferencesManager.getLastBackupUri()?.let {
+                    intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(it))
+                }
+                return intent
+            }
+        }
     ) { uri ->
         uri?.let { viewModel.importTags(it) }
     }

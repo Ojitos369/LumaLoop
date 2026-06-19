@@ -15,8 +15,9 @@ data class SettingsUiState(
         val swipeToChange: Boolean = false,
         val galleryColumns: Int = 3,
         val thumbnailRatio: String = "3:4",
-        val tagFilterMode: SharedPreferencesManager.TagFilterMode = SharedPreferencesManager.TagFilterMode.OR,
+        val tagFilterMode: SharedPreferencesManager.TagFilterMode = SharedPreferencesManager.TagFilterMode.HAS_ANY,
         val hiddenTags: Set<String> = emptySet(),
+        val ignoredFilterTags: Set<String> = emptySet(),
         val autoTagEnabled: Boolean = false,
         val availableTags: Set<String> = emptySet()
 )
@@ -78,6 +79,7 @@ class SettingsViewModel(private val preferencesManager: SharedPreferencesManager
                         thumbnailRatio = prefs.getString("thumbnail_ratio", "3:4") ?: "3:4",
                         tagFilterMode = preferencesManager.getTagFilterMode(),
                         hiddenTags = preferencesManager.getHiddenTags(),
+                        ignoredFilterTags = preferencesManager.getIgnoredFilterTags(),
                         autoTagEnabled = preferencesManager.isAutoTagEnabled(),
                         availableTags = preferencesManager.allTags
                 )
@@ -144,6 +146,11 @@ class SettingsViewModel(private val preferencesManager: SharedPreferencesManager
     fun setHiddenTags(tags: Set<String>) {
         _uiState.value = _uiState.value.copy(hiddenTags = tags)
         preferencesManager.setHiddenTags(tags)
+    }
+
+    fun setIgnoredFilterTags(tags: Set<String>) {
+        _uiState.value = _uiState.value.copy(ignoredFilterTags = tags)
+        preferencesManager.setIgnoredFilterTags(tags)
     }
 
     fun setAutoTagEnabled(enabled: Boolean) {

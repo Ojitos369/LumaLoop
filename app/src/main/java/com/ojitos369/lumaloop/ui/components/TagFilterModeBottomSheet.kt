@@ -2,6 +2,8 @@ package com.ojitos369.lumaloop.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,10 +19,16 @@ fun TagFilterModeBottomSheet(
     onSave: (TagFilterMode) -> Unit
 ) {
     val modes = listOf(
-        TagFilterMode.AND to "Must have ALL active tags",
-        TagFilterMode.OR to "Can have ANY active tag",
-        TagFilterMode.XAND to "Must NOT have all active tags",
-        TagFilterMode.XOR to "Must have EXACTLY ONE active tag"
+        // Positive modes
+        TagFilterMode.HAS_ALL to "Has all selected tags (may have more)",
+        TagFilterMode.HAS_ANY to "Has at least one selected tag (may have more)",
+        TagFilterMode.ONLY_SELECTED to "Has only selected tags, nothing else",
+        TagFilterMode.EXACTLY_ALL to "Has exactly all selected tags and nothing else",
+        // Negative modes (opposites)
+        TagFilterMode.NOT_ANY to "Has none of the selected tags",
+        TagFilterMode.NOT_ALL to "Does not have all of the selected tags",
+        TagFilterMode.NOT_ONLY to "Exclude items that have only selected tags",
+        TagFilterMode.NOT_EXACTLY to "Exclude items that have exactly the selected tags"
     )
     
     ModalBottomSheet(
@@ -30,6 +38,8 @@ fun TagFilterModeBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(max = 560.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.Start
         ) {

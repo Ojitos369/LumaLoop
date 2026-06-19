@@ -79,6 +79,7 @@ fun SettingsScreen(
     var showThumbnailRatioSheet by remember { mutableStateOf(false) }
     var showTagFilterModeSheet by remember { mutableStateOf(false) }
     var showHiddenTagsSheet by remember { mutableStateOf(false) }
+    var showIgnoredTagsSheet by remember { mutableStateOf(false) }
 
     Column(
             modifier =
@@ -255,6 +256,16 @@ fun SettingsScreen(
                     modifier = Modifier.clickable { showHiddenTagsSheet = true }
             )
 
+            ListItem(
+                    colors = transparentListItemColors(),
+                    headlineContent = { Text("Ignored Filter Tags") },
+                    supportingContent = { Text("${uiState.ignoredFilterTags.size} tags ignored by filters") },
+                    leadingContent = {
+                        Icon(Icons.Default.Block, contentDescription = null)
+                    },
+                    modifier = Modifier.clickable { showIgnoredTagsSheet = true }
+            )
+
             // Auto-tag Setting
             ListItem(
                     colors = transparentListItemColors(),
@@ -356,6 +367,17 @@ fun SettingsScreen(
                 hiddenTags = uiState.hiddenTags,
                 onDismiss = { showHiddenTagsSheet = false },
                 onSave = { viewModel.setHiddenTags(it) }
+        )
+    }
+
+    if (showIgnoredTagsSheet) {
+        HiddenTagsBottomSheet(
+                availableTags = uiState.availableTags,
+                hiddenTags = uiState.ignoredFilterTags,
+                onDismiss = { showIgnoredTagsSheet = false },
+                onSave = { viewModel.setIgnoredFilterTags(it) },
+                title = "Ignored Filter Tags",
+                description = "These tags are not considered by any of the 8 filter methods."
         )
     }
 }

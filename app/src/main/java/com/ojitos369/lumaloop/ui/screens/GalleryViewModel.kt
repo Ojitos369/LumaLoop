@@ -56,7 +56,8 @@ data class GalleryUiState(
         val activeTags: Set<String> = emptySet(),
         val availableTags: Set<String> = emptySet(),
         val hiddenTags: Set<String> = emptySet(),
-        val tagFilterMode: SharedPreferencesManager.TagFilterMode = SharedPreferencesManager.TagFilterMode.OR,
+        val ignoredFilterTags: Set<String> = emptySet(),
+        val tagFilterMode: SharedPreferencesManager.TagFilterMode = SharedPreferencesManager.TagFilterMode.HAS_ANY,
         val autoTagEnabled: Boolean = false,
         val isLoading: Boolean = false,
         val sortOption: SortOption = SortOption.DATE_DESC,
@@ -241,6 +242,7 @@ class GalleryViewModel(
                     availableTags = preferencesManager.masterTagList,
                     activeTags = preferencesManager.getActiveTags(),
                     hiddenTags = preferencesManager.getHiddenTags(),
+                    ignoredFilterTags = preferencesManager.getIgnoredFilterTags(),
                     tagFilterMode = preferencesManager.getTagFilterMode(),
                     autoTagEnabled = preferencesManager.isAutoTagEnabled()
                 )
@@ -743,13 +745,9 @@ class GalleryViewModel(
             visibleItems
         } else {
             visibleItems.filter { item ->
-                when (mode) {
-                    SharedPreferencesManager.TagFilterMode.AND -> item.tags.containsAll(activeTags)
-                    SharedPreferencesManager.TagFilterMode.OR -> item.tags.any { it in activeTags }
-                    SharedPreferencesManager.TagFilterMode.XAND -> !item.tags.containsAll(activeTags)
-                    SharedPreferencesManager.TagFilterMode.XOR -> item.tags.count { it in activeTags } == 1
-                    else -> item.tags.any { it in activeTags }
-                }
+                SharedPreferencesManager.matchesTagFilter(
+                    item.tags, activeTags, _uiState.value.ignoredFilterTags, mode
+                )
             }
         }
         Log.d("GalleryViewModel", "Filtering: mode=$mode, active=${activeTags.joinToString()}, hiddenCount=${hiddenTags.size}, total=${baseItems.size}, filtered=${filtered.size}")
@@ -770,6 +768,21 @@ class GalleryViewModel(
     fun clearTagFilters() {
         preferencesManager.setActiveTags(emptySet())
         _uiState.value = _uiState.value.copy(activeTags = emptySet(), selectedItems = emptySet())
+    }
+
+    /**
+     * Re-read tag filter settings from prefs without a full media reload.
+     * Needed because Settings screen uses a separate ViewModel; when the user
+     * changes the filter mode there, this ViewModel's cached state is stale.
+     */
+    fun refreshFilterSettings() {
+        _uiState.value = _uiState.value.copy(
+            activeTags = preferencesManager.getActiveTags(),
+            hiddenTags = preferencesManager.getHiddenTags(),
+            ignoredFilterTags = preferencesManager.getIgnoredFilterTags(),
+            tagFilterMode = preferencesManager.getTagFilterMode(),
+            availableTags = preferencesManager.masterTagList
+        )
     }
 
     fun setTagFilterMode(mode: SharedPreferencesManager.TagFilterMode) {

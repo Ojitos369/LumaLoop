@@ -9,6 +9,7 @@ public class TagExportData {
     public Map<String, List<String>> mappings; // Uri.toString() -> List<String>
     public Set<String> activeTags;
     public Set<String> hiddenTags;
+    public Set<String> ignoredFilterTags;
     public String tagFilterMode;
     public boolean autoTagEnabled;
 }

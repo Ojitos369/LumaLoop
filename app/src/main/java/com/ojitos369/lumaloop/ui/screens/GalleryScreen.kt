@@ -48,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import com.yalantis.ucrop.UCrop
 import com.ojitos369.lumaloop.preferences.SharedPreferencesManager
 import com.ojitos369.lumaloop.ui.components.CropHelper
@@ -156,6 +159,9 @@ fun GalleryScreen(
                 val allGranted = permissions.values.all { it }
                 if (allGranted) {
                     Log.d("GalleryScreen", "Storage permissions granted")
+                    // Reload now that we can read MediaStore — the ViewModel's
+                    // initial load ran before the grant and found nothing.
+                    viewModel.loadMediaItems()
                 } else {
                     Log.w("GalleryScreen", "Storage permissions denied")
                     // TODO: Show explanation to user
@@ -180,6 +186,24 @@ fun GalleryScreen(
         if (needsPermission) {
             permissionLauncher.launch(permissions)
         }
+    }
+
+    // Re-read tag filter settings whenever the screen resumes. The Settings
+    // screen uses its own ViewModel, so a filter-mode change made there would
+    // otherwise stay invisible here until a full reload.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                // Instant filter refresh (Settings uses a separate ViewModel)...
+                viewModel.refreshFilterSettings()
+                // ...plus a full reload so imported tags/backups and new files
+                // in the album show up without restarting the app.
+                viewModel.loadMediaItems(preserveSelection = true)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     // Handle shared media from intent - delegate to ViewModel
@@ -491,7 +515,7 @@ fun GalleryScreen(
     )
 
     val filteredItems =
-                remember(uiState.mediaItems, uiState.activeTags, uiState.hiddenTags, uiState.tagFilterMode) {
+                remember(uiState.mediaItems, uiState.activeTags, uiState.hiddenTags, uiState.ignoredFilterTags, uiState.tagFilterMode) {
                     val visibleItems = uiState.mediaItems.filter { item ->
                         item.tags.none { it in uiState.hiddenTags }
                     }
@@ -499,12 +523,9 @@ fun GalleryScreen(
                         visibleItems
                     } else {
                         visibleItems.filter { item ->
-                            when (uiState.tagFilterMode) {
-                                SharedPreferencesManager.TagFilterMode.AND -> item.tags.containsAll(uiState.activeTags)
-                                SharedPreferencesManager.TagFilterMode.OR -> item.tags.any { it in uiState.activeTags }
-                                SharedPreferencesManager.TagFilterMode.XAND -> !item.tags.containsAll(uiState.activeTags)
-                                SharedPreferencesManager.TagFilterMode.XOR -> item.tags.count { it in uiState.activeTags } == 1
-                            }
+                            SharedPreferencesManager.matchesTagFilter(
+                                item.tags, uiState.activeTags, uiState.ignoredFilterTags, uiState.tagFilterMode
+                            )
                         }
                     }
                 }
@@ -927,7 +948,9 @@ fun GalleryScreen(
                     }
                 }
             }
-    
+        }
+    }
+
     // Fullscreen image viewer
     fullscreenImageUri?.let { uri ->
         val item = uiState.mediaItems.find { it.uri == uri }
@@ -990,8 +1013,6 @@ fun GalleryScreen(
             onDismiss = { showTagFilterSheet = false }
         )
     }
-}
-}
 }
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
