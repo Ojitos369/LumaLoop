@@ -85,6 +85,8 @@ dependencies {
     implementation 'com.github.yalantis:ucrop:2.2.8'
     implementation 'androidx.media3:media3-exoplayer:1.5.0'
     implementation 'androidx.media3:media3-ui:1.5.0'
+    implementation 'androidx.media3:media3-transformer:1.5.0'
+    implementation 'androidx.media3:media3-effect:1.5.0'
     // implementation 'androidx.media3:media3-image:1.5.0'  // Not yet available
     
     // Kotlin
@@ -119,6 +121,10 @@ dependencies {
     
     // Coil for image loading in Compose
     implementation 'io.coil-kt:coil-compose:2.6.0'
+
+    // Wearable Data Layer (sync images to the Wear OS watch face)
+    implementation 'com.google.android.gms:play-services-wearable:18.2.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3'
     
     // Accompanist for system UI control (edge-to-edge, insets)
     implementation 'com.google.accompanist:accompanist-systemuicontroller:0.34.0'

@@ -77,8 +77,12 @@ data class GalleryUiState(
 
 class GalleryViewModel(
         private val context: Context,
-        private val preferencesManager: SharedPreferencesManager
+        private val preferencesManager: SharedPreferencesManager,
+        private val albumName: String = "LumaLoop"
 ) : ViewModel() {
+
+    private val isWatchAlbum: Boolean
+        get() = albumName == MediaStoreHelper.WATCH_ALBUM_NAME
 
     private val _uiState = MutableStateFlow(GalleryUiState())
     val uiState: StateFlow<GalleryUiState> = _uiState.asStateFlow()
@@ -110,10 +114,12 @@ class GalleryViewModel(
         )
 
         loadMediaItems()
-        // Migrate from private storage to public album if needed
-        migrateToPublicAlbum()
-        // Clean up duplicates and invalid URIs
-        cleanupDuplicates()
+        if (!isWatchAlbum) {
+            // Migrate from private storage to public album if needed
+            migrateToPublicAlbum()
+            // Clean up duplicates and invalid URIs
+            cleanupDuplicates()
+        }
     }
 
     override fun onCleared() {
@@ -405,12 +411,14 @@ class GalleryViewModel(
                                                     )
                                         }
 
-                                        // Copy to public MediaStore album
+                                        // Copy to public MediaStore album; watch
+                                        // media gets compressed at sync time
                                         val albumUri =
                                                 MediaStoreHelper.copyToPublicAlbum(
                                                         context,
                                                         originalUri,
-                                                        originalName
+                                                        originalName,
+                                                        albumName
                                                 )
                                         val uriToSave = albumUri ?: originalUri
 
@@ -542,16 +550,22 @@ class GalleryViewModel(
 
     private suspend fun syncWithAlbum(): Boolean = withContext(Dispatchers.IO) {
         try {
-            // Get all files currently in LumaLoop album
-            val albumUris = MediaStoreHelper.getAlbumContent(context).toSet()
+            // Get all files currently in this gallery's album
+            val albumUris = MediaStoreHelper.getAlbumContent(context, albumName).toSet()
             val savedUris =
                     preferencesManager.getImageUris(
                             com.ojitos369.lumaloop.preferences
                                     .SharedPreferencesManager.Ordering.SELECTION
                     )
 
-            val toRemove = savedUris.filter { it !in albumUris && it.toString().contains("LumaLoop") }
-            val toAdd = albumUris.filter { uri -> 
+            // Watch-album files must never appear in the phone gallery
+            val watchUris = if (isWatchAlbum) emptySet() else MediaStoreHelper
+                    .getAlbumContent(context, MediaStoreHelper.WATCH_ALBUM_NAME)
+                    .toSet()
+            val toRemove = savedUris.filter {
+                (it !in albumUris && it.toString().contains("LumaLoop")) || it in watchUris
+            }
+            val toAdd = albumUris.filter { uri ->
                 !preferencesManager.hasUriWithSameId(savedUris, uri)
             }
 
@@ -604,6 +618,39 @@ class GalleryViewModel(
             } catch (e: Exception) {
                 Log.e("GalleryViewModel", "Cleanup error", e)
             }
+        }
+    }
+
+    /**
+     * Removal after "move to watch": the app owns the LumaLoop album files,
+     * so a direct MediaStore delete works silently; anything that fails
+     * (e.g. ownership lost after a reinstall) falls back to the system
+     * confirmation dialog.
+     */
+    fun removeAfterMove(uris: List<Uri>) {
+        viewModelScope.launch {
+            val failed = mutableListOf<Uri>()
+            withContext(Dispatchers.IO) {
+                uris.forEach { uri ->
+                    try {
+                        context.contentResolver.delete(uri, null, null)
+                        preferencesManager.removeUri(uri)
+                    } catch (e: Exception) {
+                        Log.w("GalleryViewModel", "Direct delete failed for $uri", e)
+                        failed.add(uri)
+                    }
+                }
+            }
+            if (failed.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                try {
+                    val pendingIntent = MediaStore.createDeleteRequest(context.contentResolver, failed)
+                    _uiState.value = _uiState.value.copy(pendingDeleteIntent = pendingIntent.intentSender)
+                } catch (e: Exception) {
+                    Log.e("GalleryViewModel", "Fallback delete request failed", e)
+                }
+            }
+            loadMediaItems()
+            deselectAll()
         }
     }
 
@@ -892,11 +939,13 @@ class GalleryViewModel(
 
 class GalleryViewModelFactory(
         private val context: Context,
-        private val preferencesManager: SharedPreferencesManager
+        private val preferencesManager: SharedPreferencesManager,
+        private val albumName: String = "LumaLoop"
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GalleryViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST") return GalleryViewModel(context, preferencesManager) as T
+            @Suppress("UNCHECKED_CAST")
+            return GalleryViewModel(context, preferencesManager, albumName) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

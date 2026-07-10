@@ -1,0 +1,71 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+def keystorePropertiesFile = rootProject.file("Keystore/keystore.properties")
+def keystoreProperties = null
+if (keystorePropertiesFile.canRead()) {
+    keystoreProperties = new Properties()
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace 'com.ojitos369.lumaloop'
+    compileSdk 35
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    signingConfigs {
+        release {
+
+        }
+    }
+
+    defaultConfig {
+        // Same applicationId as the phone app: required for the Wearable Data Layer
+        // to route data items between both devices.
+        applicationId "com.ojitos369.lumaloop"
+        minSdkVersion 30
+        targetSdk 34
+        versionCode 15
+        versionName '1.4.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            signingConfig signingConfigs.release
+        }
+        debug {
+        }
+    }
+}
+
+if (keystoreProperties != null) {
+    android.signingConfigs.release.keyAlias keystoreProperties['keyAlias']
+    android.signingConfigs.release.keyPassword keystoreProperties['keyPassword']
+    android.signingConfigs.release.storeFile rootProject.file("Keystore/${keystoreProperties['storeFile']}")
+    android.signingConfigs.release.storePassword keystoreProperties['storePassword']
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.22'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+
+    // Watch face (GLES renderer) + complications
+    implementation 'androidx.wear.watchface:watchface:1.2.1'
+    implementation 'androidx.wear.watchface:watchface-complications-rendering:1.2.1'
+
+    // Data Layer sync with the phone app
+    implementation 'com.google.android.gms:play-services-wearable:18.2.0'
+}

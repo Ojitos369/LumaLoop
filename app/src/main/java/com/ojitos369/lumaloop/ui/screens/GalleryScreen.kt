@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -41,6 +42,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
 import androidx.compose.ui.unit.IntOffset
@@ -61,7 +63,10 @@ import com.ojitos369.lumaloop.ui.components.MediaCard
 import com.ojitos369.lumaloop.ui.components.TagFilterBottomSheet
 import com.ojitos369.lumaloop.ui.components.TagFilterModeBottomSheet
 import com.ojitos369.lumaloop.ui.components.VideoPlayerDialog
+import com.ojitos369.lumaloop.ui.components.WatchVideoEditorDialog
 import com.ojitos369.lumaloop.ui.theme.neumorphic
+import com.ojitos369.lumaloop.ui.utils.WatchRepo
+import android.widget.Toast
 import java.io.File
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
@@ -75,17 +80,23 @@ import kotlinx.coroutines.withContext
 fun GalleryScreen(
         sharedUris: List<Uri>? = null,
         activity: ComponentActivity,
+        albumName: String = "LumaLoop",
+        isWatch: Boolean = false,
         viewModel: GalleryViewModel =
                 viewModel(
+                        key = if (isWatch) "watch_gallery" else "phone_gallery",
                         factory =
                                 GalleryViewModelFactory(
                                         activity,
                                         SharedPreferencesManager(
                                                 activity.getSharedPreferences(
-                                                        "${activity.packageName}_preferences",
+                                                        if (isWatch)
+                                                                "${activity.packageName}_watch_preferences"
+                                                        else "${activity.packageName}_preferences",
                                                         Activity.MODE_PRIVATE
                                                 )
-                                        )
+                                        ),
+                                        albumName
                                 )
                 )
 ) {
@@ -107,7 +118,28 @@ fun GalleryScreen(
     // Tag filter bottom sheet state
     var showTagFilterSheet by remember { mutableStateOf(false) }
 
-    
+    // Watch mode state (Sync + video editor)
+    val watchSyncScope = rememberCoroutineScope()
+    var watchSyncInProgress by remember { mutableStateOf(false) }
+    var videoEditTarget by remember { mutableStateOf<Uri?>(null) }
+
+    fun syncToWatch() {
+        if (watchSyncInProgress) return
+        watchSyncInProgress = true
+        val allUris = uiState.mediaItems.map { it.uri }
+        Toast.makeText(activity, "Syncing ${allUris.size} items to watch...", Toast.LENGTH_SHORT).show()
+        watchSyncScope.launch {
+            val result = WatchRepo.syncAllToWatch(activity, allUris)
+            val message = when (result) {
+                is WatchRepo.PushResult.Success -> "Watch synced: ${result.items} items sent"
+                is WatchRepo.PushResult.NoWatchConnected -> "No watch connected"
+                is WatchRepo.PushResult.Error -> "Sync error: ${result.message}"
+            }
+            Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
+            watchSyncInProgress = false
+        }
+    }
+
     val prefs = remember {
         activity.getSharedPreferences("${activity.packageName}_preferences", Activity.MODE_PRIVATE)
     }
@@ -666,6 +698,50 @@ fun GalleryScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Watch mode: sync everything to the watch
+                    if (isWatch) {
+                        FloatingActionButton(
+                                onClick = { syncToWatch() },
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                                modifier = Modifier.neumorphic(
+                                    cornerRadius = 16.dp, elevation = 5.dp, blur = 10.dp,
+                                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+                                )
+                        ) {
+                            if (watchSyncInProgress) {
+                                CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            } else {
+                                Icon(Icons.Default.Sync, contentDescription = "Sync to watch")
+                            }
+                        }
+                    }
+
+                    // Watch mode: edit selected video (trim/ratio)
+                    if (isWatch) {
+                        val singleVideo = uiState.mediaItems
+                                .filter { it.uri in uiState.selectedItems }
+                                .takeIf { it.size == 1 && it.first().isVideo }
+                                ?.firstOrNull()
+                        if (singleVideo != null) {
+                            FloatingActionButton(
+                                    onClick = { videoEditTarget = singleVideo.uri },
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp),
+                                    modifier = Modifier.neumorphic(
+                                        cornerRadius = 16.dp, elevation = 5.dp, blur = 10.dp,
+                                        backgroundColor = MaterialTheme.colorScheme.secondaryContainer
+                                    )
+                            ) { Icon(Icons.Default.ContentCut, contentDescription = "Edit video") }
+                        }
+                    }
+
                     // Delete FAB (only show when items selected)
                     if (uiState.selectedItems.isNotEmpty()) {
                         FloatingActionButton(
@@ -971,6 +1047,28 @@ fun GalleryScreen(
         )
     }
 
+
+    videoEditTarget?.let { target ->
+        WatchVideoEditorDialog(
+            activity = activity,
+            uri = target,
+            onDismiss = { videoEditTarget = null },
+            onSaved = { newUri ->
+                videoEditTarget = null
+                watchSyncScope.launch {
+                    val exported = newUri.path?.let { File(it) }
+                    val albumUri = exported?.let { WatchRepo.addFileToWatchAlbum(activity, it) }
+                    exported?.delete()
+                    if (albumUri != null) {
+                        viewModel.removeAfterMove(listOf(target))
+                        Toast.makeText(activity, "Video edited. Tap Sync to send", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(activity, "Could not save edited video", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        )
+    }
 
     if (showTagDialog) {
         val selectedItemsTags = uiState.mediaItems

@@ -85,6 +85,27 @@
                 <data android:mimeType="video/*" />
             </intent-filter>
         </activity>
+        <!-- Share target that feeds the watch gallery (LumaLoopWatch album) -->
+        <activity
+            android:name=".ui.WatchShareActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="LumaLoopWatch"
+            android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name=".infoScreen.InfoScreenActivity"
             android:exported="false"
@@ -104,6 +125,19 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+
+        <!-- Streams watch face media on demand via the Wearable Data Layer -->
+        <service
+            android:name=".service.WatchMediaProviderService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
+                <data
+                    android:host="*"
+                    android:path="/lumaloop/fetch"
+                    android:scheme="wear" />
+            </intent-filter>
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

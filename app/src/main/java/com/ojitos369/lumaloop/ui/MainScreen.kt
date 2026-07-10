@@ -29,14 +29,18 @@ import com.ojitos369.lumaloop.ui.screens.GalleryScreen
 import com.ojitos369.lumaloop.ui.screens.PreviewScreen
 import com.ojitos369.lumaloop.ui.screens.SettingsScreen
 import com.ojitos369.lumaloop.ui.screens.TagCatalogScreen
+import com.ojitos369.lumaloop.ui.utils.MediaStoreHelper
+import com.ojitos369.lumaloop.ui.utils.WatchRepo
 
 @Composable
 fun MainScreen(sharedUris: List<Uri>? = null, activity: ComponentActivity) {
     val navController = rememberNavController()
-    val items = listOf(
+    // Recomputed on every recomposition so toggling the setting updates the bar
+    val items = listOfNotNull(
         NavigationDestination.Gallery,
         NavigationDestination.Tags,
         NavigationDestination.Preview,
+        NavigationDestination.Watch.takeIf { WatchRepo.isEnabled(activity) },
         NavigationDestination.Settings
     )
     
@@ -98,6 +102,13 @@ fun MainScreen(sharedUris: List<Uri>? = null, activity: ComponentActivity) {
             }
             composable(NavigationDestination.Preview.route) {
                 PreviewScreen()
+            }
+            composable(NavigationDestination.Watch.route) {
+                GalleryScreen(
+                    activity = activity,
+                    albumName = MediaStoreHelper.WATCH_ALBUM_NAME,
+                    isWatch = true
+                )
             }
             composable(NavigationDestination.Settings.route) {
                 SettingsScreen()

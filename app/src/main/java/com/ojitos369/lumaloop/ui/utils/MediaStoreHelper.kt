@@ -12,9 +12,10 @@ import java.io.File
 
 object MediaStoreHelper {
     private const val ALBUM_NAME = "LumaLoop"
+    const val WATCH_ALBUM_NAME = "LumaLoopWatch"
     private const val TAG = "MediaStoreHelper"
     
-    suspend fun copyToPublicAlbum(context: Context, sourceUri: Uri, originalName: String? = null): Uri? = withContext(Dispatchers.IO) {
+    suspend fun copyToPublicAlbum(context: Context, sourceUri: Uri, originalName: String? = null, albumName: String = ALBUM_NAME): Uri? = withContext(Dispatchers.IO) {
         try {
             val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return@withContext null
             
@@ -45,7 +46,7 @@ object MediaStoreHelper {
                 put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
                 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/$ALBUM_NAME")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, "Pictures/$albumName")
                     put(MediaStore.MediaColumns.IS_PENDING, 1)
                 }
             }
@@ -90,7 +91,7 @@ object MediaStoreHelper {
         }
     }
     
-    fun getAlbumContent(context: Context): List<Uri> {
+    fun getAlbumContent(context: Context, albumName: String = ALBUM_NAME): List<Uri> {
         val albumUris = mutableListOf<Uri>()
         
         try {
@@ -107,7 +108,7 @@ object MediaStoreHelper {
             }
             
             val imageSelectionArgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                arrayOf("%Pictures/$ALBUM_NAME%")
+                arrayOf("%Pictures/$albumName/%")
             } else {
                 null
             }
@@ -143,7 +144,7 @@ object MediaStoreHelper {
             }
             
             val videoSelectionArgs = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                arrayOf("%Pictures/$ALBUM_NAME%")
+                arrayOf("%Pictures/$albumName/%")
             } else {
                 null
             }

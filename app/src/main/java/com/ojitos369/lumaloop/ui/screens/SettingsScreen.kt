@@ -23,6 +23,10 @@ import com.ojitos369.lumaloop.ui.components.ThumbnailRatioBottomSheet
 import com.ojitos369.lumaloop.ui.components.TagFilterModeBottomSheet
 import com.ojitos369.lumaloop.ui.components.HiddenTagsBottomSheet
 import com.ojitos369.lumaloop.ui.theme.neumorphic
+import com.ojitos369.lumaloop.ui.utils.WatchRepo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 private fun SettingsSection(
@@ -80,6 +84,17 @@ fun SettingsScreen(
     var showTagFilterModeSheet by remember { mutableStateOf(false) }
     var showHiddenTagsSheet by remember { mutableStateOf(false) }
     var showIgnoredTagsSheet by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var watchEnabled by remember { mutableStateOf(WatchRepo.isEnabled(context)) }
+    var watchInterval by remember { mutableStateOf(WatchRepo.interval(context)) }
+    var watchShuffle by remember { mutableStateOf(WatchRepo.shuffle(context)) }
+    var watchShowDate by remember { mutableStateOf(WatchRepo.showDate(context)) }
+    var watchShowComplications by remember { mutableStateOf(WatchRepo.showComplications(context)) }
+    var watchClockPosition by remember { mutableStateOf(WatchRepo.clockPosition(context)) }
+    var watchAmbientMedia by remember { mutableStateOf(WatchRepo.ambientMedia(context)) }
+    var showWatchIntervalSheet by remember { mutableStateOf(false) }
 
     Column(
             modifier =
@@ -283,6 +298,122 @@ fun SettingsScreen(
             )
         }
 
+        SettingsSection(title = "Smartwatch") {
+            ListItem(
+                    colors = transparentListItemColors(),
+                    headlineContent = { Text("Enable Watch Features") },
+                    supportingContent = {
+                        Text("Watch gallery tab, watch face sync and streaming")
+                    },
+                    leadingContent = {
+                        Icon(
+                                Icons.Default.Watch,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                                checked = watchEnabled,
+                                onCheckedChange = {
+                                    watchEnabled = it
+                                    WatchRepo.setEnabled(context, it)
+                                    if (it) scope.launch { WatchRepo.pushAll(context) }
+                                }
+                        )
+                    }
+            )
+
+            if (watchEnabled) {
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Watch Slideshow Interval") },
+                        supportingContent = { Text("$watchInterval seconds per image (videos play fully)") },
+                        leadingContent = { Icon(Icons.Default.Timer, contentDescription = null) },
+                        trailingContent = { Icon(Icons.Default.ChevronRight, contentDescription = null) },
+                        modifier = Modifier.clickable { showWatchIntervalSheet = true }
+                )
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Watch Shuffle") },
+                        supportingContent = { Text("Random playback order on the watch") },
+                        leadingContent = { Icon(Icons.Default.Shuffle, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                    checked = watchShuffle,
+                                    onCheckedChange = {
+                                        watchShuffle = it
+                                        WatchRepo.setShuffle(context, it)
+                                        scope.launch { WatchRepo.pushConfig(context) }
+                                    }
+                            )
+                        }
+                )
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Clock Position") },
+                        supportingContent = { Text(watchClockPosition.replaceFirstChar { it.uppercase() }) },
+                        leadingContent = { Icon(Icons.Default.Schedule, contentDescription = null) },
+                        modifier = Modifier.clickable {
+                            watchClockPosition = when (watchClockPosition) {
+                                "top" -> "center"
+                                "center" -> "bottom"
+                                else -> "top"
+                            }
+                            WatchRepo.setClockPosition(context, watchClockPosition)
+                            scope.launch { WatchRepo.pushConfig(context) }
+                        }
+                )
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Show Date") },
+                        leadingContent = { Icon(Icons.Default.CalendarMonth, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                    checked = watchShowDate,
+                                    onCheckedChange = {
+                                        watchShowDate = it
+                                        WatchRepo.setShowDate(context, it)
+                                        scope.launch { WatchRepo.pushConfig(context) }
+                                    }
+                            )
+                        }
+                )
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Show Complications") },
+                        supportingContent = { Text("Steps, battery, weather... pick sources in the watch face editor") },
+                        leadingContent = { Icon(Icons.Default.Insights, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                    checked = watchShowComplications,
+                                    onCheckedChange = {
+                                        watchShowComplications = it
+                                        WatchRepo.setShowComplications(context, it)
+                                        scope.launch { WatchRepo.pushConfig(context) }
+                                    }
+                            )
+                        }
+                )
+                ListItem(
+                        colors = transparentListItemColors(),
+                        headlineContent = { Text("Media in Ambient Mode") },
+                        supportingContent = { Text("Keep the frozen frame visible (dimmed) when the screen sleeps") },
+                        leadingContent = { Icon(Icons.Default.Brightness4, contentDescription = null) },
+                        trailingContent = {
+                            Switch(
+                                    checked = watchAmbientMedia,
+                                    onCheckedChange = {
+                                        watchAmbientMedia = it
+                                        WatchRepo.setAmbientMedia(context, it)
+                                        scope.launch { WatchRepo.pushConfig(context) }
+                                    }
+                            )
+                        }
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         // App Info
@@ -310,6 +441,18 @@ fun SettingsScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
+    }
+
+    if (showWatchIntervalSheet) {
+        IntervalBottomSheet(
+                currentInterval = watchInterval,
+                onDismiss = { showWatchIntervalSheet = false },
+                onSave = { newInterval ->
+                    watchInterval = newInterval.coerceAtLeast(5)
+                    WatchRepo.setInterval(context, watchInterval)
+                    scope.launch { WatchRepo.pushConfig(context) }
+                }
+        )
     }
 
     // Show interval bottom sheet

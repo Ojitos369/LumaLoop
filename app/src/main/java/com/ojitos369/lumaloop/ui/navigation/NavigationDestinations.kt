@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Watch
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class NavigationDestination(
@@ -33,5 +34,11 @@ sealed class NavigationDestination(
         route = "tags",
         title = "Tags",
         icon = Icons.Default.CollectionsBookmark
+    )
+
+    object Watch : NavigationDestination(
+        route = "watch",
+        title = "Watch",
+        icon = Icons.Default.Watch
     )
 }
