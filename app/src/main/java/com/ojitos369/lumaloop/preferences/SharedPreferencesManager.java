@@ -56,6 +56,7 @@ public class SharedPreferencesManager {
         // Positive modes: keep an item if it matches
         HAS_ALL("and"),          // has all selected tags (may have more)
         HAS_ANY("or"),           // has at least one selected tag (may have more)
+        HAS_EXACTLY_ONE("xor"),  // has exactly one of the selected tags
         ONLY_SELECTED("only"),   // has only selected tags, nothing else (one or more)
         EXACTLY_ALL("exact"),    // has exactly all selected tags and nothing else
         // Negative modes (the opposite of each positive one)
@@ -95,10 +96,11 @@ public class SharedPreferencesManager {
         java.util.Set<String> t = new java.util.HashSet<>(itemTags);
         if (ignoredTags != null) t.removeAll(ignoredTags);
         activeTags = active;
-        boolean hasAny = false;
+        int matches = 0;
         for (String tag : activeTags) {
-            if (t.contains(tag)) { hasAny = true; break; }
+            if (t.contains(tag)) matches++;
         }
+        boolean hasAny = matches > 0;
         boolean hasAll = t.containsAll(activeTags);
         // every tag on the item is a selected one, and the item has at least one tag
         boolean onlySelected = !t.isEmpty() && activeTags.containsAll(t);
@@ -107,6 +109,7 @@ public class SharedPreferencesManager {
         switch (mode) {
             case HAS_ALL:       return hasAll;
             case HAS_ANY:       return hasAny;
+            case HAS_EXACTLY_ONE: return matches == 1;
             case ONLY_SELECTED: return onlySelected;
             case EXACTLY_ALL:   return exactlyAll;
             case NOT_ANY:       return !hasAny;

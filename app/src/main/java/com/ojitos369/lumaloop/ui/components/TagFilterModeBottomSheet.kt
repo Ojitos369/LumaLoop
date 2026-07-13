@@ -22,6 +22,7 @@ fun TagFilterModeBottomSheet(
         // Positive modes
         TagFilterMode.HAS_ALL to "Has all selected tags (may have more)",
         TagFilterMode.HAS_ANY to "Has at least one selected tag (may have more)",
+        TagFilterMode.HAS_EXACTLY_ONE to "Has exactly one of the selected tags (XOR)",
         TagFilterMode.ONLY_SELECTED to "Has only selected tags, nothing else",
         TagFilterMode.EXACTLY_ALL to "Has exactly all selected tags and nothing else",
         // Negative modes (opposites)
