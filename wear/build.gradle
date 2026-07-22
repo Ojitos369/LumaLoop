@@ -12,7 +12,7 @@ if (keystorePropertiesFile.canRead()) {
 
 android {
     namespace 'com.ojitos369.lumaloop'
-    compileSdk 35
+    compileSdk 36
 
     kotlinOptions {
         jvmTarget = '1.8'
@@ -34,9 +34,9 @@ android {
         // to route data items between both devices.
         applicationId "com.ojitos369.lumaloop"
         minSdkVersion 30
-        targetSdk 34
-        versionCode 15
-        versionName '1.4.0'
+        targetSdk 36
+        versionCode 16
+        versionName '1.4.1'
     }
 
     buildTypes {

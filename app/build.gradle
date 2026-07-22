@@ -28,8 +28,8 @@ android {
 
         }
     }
-    compileSdk 35
-    
+    compileSdk 36
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -38,9 +38,9 @@ android {
     defaultConfig {
         applicationId "com.ojitos369.lumaloop"
         minSdkVersion 21
-        targetSdk 35
-        versionCode 15
-        versionName '1.4.0'
+        targetSdk 36
+        versionCode 16
+        versionName '1.4.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     buildTypes {
